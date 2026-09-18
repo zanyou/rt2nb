@@ -1,0 +1,78 @@
+# ---------------------------------------------------------------------------
+# RackTables -> NetBox migration tool configuration (example).
+#
+# Copy to config.yml and fill in.  Never commit config.yml with real
+# credentials.  Every value can also be overridden by an environment variable
+# of the same dotted path upper-cased with underscores, e.g.
+#   RT2NB_RACKTABLES__PASSWORD=secret
+# ---------------------------------------------------------------------------
+
+racktables:
+  host: 127.0.0.1
+  port: 3306
+  user: racktables_ro          # a READ-ONLY MySQL account is strongly recommended
+  password: "changeme"
+  database: racktables
+  charset: utf8mb4
+  # Optional: connect timeout in seconds.
+  connect_timeout: 10
+
+netbox:
+  url: "http://127.0.0.1:8000"  # base URL, no trailing /api
+  token: "0123456789abcdef0123456789abcdef01234567"
+  # Authorization scheme. "auto" picks Bearer for new key.secret tokens
+  # (shown as nbt_<key>.<secret>) and Token for classic 40-hex tokens.
+  # Force with "token" or "bearer" if needed. Paste only the token value
+  # itself here (no "Token"/"Bearer" prefix).
+  auth_scheme: auto
+  # Verify TLS certificates.  Set false only for self-signed lab certs.
+  ssl_verify: true
+  # Per-request timeout (seconds).
+  timeout: 30
+  # Retry policy for 429 / 5xx responses.
+  retries: 5
+  retry_backoff: 0.5            # base seconds for exponential backoff
+  # Page size used when listing / bulk-creating.
+  page_size: 200
+
+# Where the export phase writes intermediate JSON and where import reads it.
+# In the Docker image these default to /data, the mounted VOLUME, so
+#   -v "$PWD/export_data:/data/export_data"
+# lands the files on your host.  Change only for a native (non-Docker) run.
+paths:
+  export_dir: "/data/export_data"
+  log_file: "/data/rt2nb.log"
+
+# ---------------------------------------------------------------------------
+# Mapping overrides.  All optional; sensible defaults are built in.
+# ---------------------------------------------------------------------------
+mapping:
+  # How RackTables Location/Row hierarchy maps onto NetBox.
+  #   row_as: location   -> RackTables top Location becomes a NetBox Site,
+  #                         each Row becomes a NetBox Location (rack group).
+  #   row_as: site       -> each Row becomes its own Site.
+  #   single_site        -> everything under one Site named `default_site_name`,
+  #                         Location/Row become nested NetBox Locations.
+  row_as: location
+  default_site_name: "Migrated"
+  default_site_slug: "migrated"
+
+  # Tag hierarchy handling: "flatten_path" keeps the leaf name as the tag name
+  # and encodes the full parent path in the slug (parent-child-leaf).
+  # Alternatives: "leaf" (leaf name only) or "explode" (one tag per level).
+  tag_strategy: flatten_path
+
+  # Placeholder device type used when a device's model cannot be resolved.
+  placeholder_manufacturer: "Unknown"
+  placeholder_device_type: "Unknown Device Type"
+  placeholder_u_height: 1
+
+  # Extra RackTables Port type ids -> NetBox interface type slug overrides.
+  # Keys are RackTables PortOuterInterface/PortInnerInterface names or ids.
+  # Values must be valid NetBox dcim interface type choices.
+  interface_type_overrides: {}
+
+  # RackTables Attribute name -> NetBox target.  Built-in defaults cover the
+  # common ones (OEM S/N 1, HW type, SW type, ...).  Each entry is:
+  #   { target: serial|asset_tag|custom_field|comments, name: <cf name> }
+  attribute_overrides: {}

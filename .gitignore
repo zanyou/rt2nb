@@ -1,0 +1,16 @@
+# Build artifacts / images
+*.tar.gz
+*.tgz
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Local config & run output (never commit secrets or migration data)
+config.yml
+export_data/
+*.log
