@@ -1,5 +1,7 @@
 # rt2nb — RackTables → NetBox migration tool
 
+[![CI](https://github.com/zanyou/rt2nb/actions/workflows/ci.yml/badge.svg)](https://github.com/zanyou/rt2nb/actions/workflows/ci.yml)
+
 A two-phase, idempotent, dry-run-capable tool that migrates a **RackTables
 0.20.x** MySQL/MariaDB database into **NetBox 4.6** via the REST API. It reads
 RackTables strictly **read-only**, writes an intermediate JSON snapshot you can
